@@ -1,20 +1,19 @@
-= dsatest
+= Distributed Switch Architecture Testing framework
 
-A test runner for DSA
+_dsatest_ is a network test framework targeting Linux machines featuring one or
+more managed Ethernet switch chips. It is designed to be simple, no complex
+topology is required. A single *host* machine running the tests must be
+connected to the switch ports of a single *target* machine under test.
 
+== Getting started
 
-== Usage
+The framework depends on `python-paramiko`. Once installed, you can skip the
+SSH connection and run all sanity tests with:
 
 [source,sh]
 ----
-# run all tests containing "ping" in their test method names
-./dsatest -t ping -B bench.cfg.example
-
-# run all tests defined in sanity.py, using bench.cfg.example for configuration
-# --dry-run will skip the SSH connection step. This is used for self-testing.
 ./dsatest --dry-run -t sanity.py -B bench.cfg.example
 ----
-
 
 == Configuration files
 
@@ -36,19 +35,30 @@ another. This file is specific to each bench.
 
 *TODO: Not used yet*
 
+They are located in `conf/switch/`. An example switch may look like this:
+
+----
+  +----------------+
+  |          port0 |----> CPU port
+  | SWITCH   port1 |----> User port #0
+  |          port2 |----> User port #1
+  |          port3 |----> User port #2
+  +----------------+
+----
+
 See link:conf/switch/example-switch.cfg[].
 
 === Target
 
-They are located in `conf/target`. They describe the hardware of the
+They are located in `conf/target/`. They describe the hardware of the
 machine being tested. For instance, consider the following situation:
 
 ----
   +--------------------------------------------------+
-  |                           Target                 |
+  |                       TARGET                     |
   |  +----------------+                              |
   |  |          port0 |----> to CPU                  |
-  |  | Switch0  port1 |--------------------------[ link0 ] <-+
+  |  | switch0  port1 |--------------------------[ link0 ] <-+
   |  |          port2 |----> Non connected           |       |- connectors
   |  |          port3 |--------------------------[ link1 ] <-+   (eg. RJ45)
   |  +----------------+                              |
@@ -56,7 +66,7 @@ machine being tested. For instance, consider the following situation:
 ----
 
 Only port1 and port3 of switch0 are connected to front-facing connectors.
-Obviously the bench can only used these two ports to run tests.
+Obviously the bench can only use these two ports to run tests.
 
 Describing the internals of the target (which switch port is connected to what
 front-facing connector) allows to get sensible error reporting if errors occur.
@@ -67,7 +77,7 @@ See link:conf/target/example-target.cfg[].
 === Bench
 
 Describe the test bench, ie. how the controlling machine (aka host), running
-dsatest, is connect to the target machine.
+dsatest, is connected to the target machine.
 
 For instance, let's create a test bench with the target defined in the previous
 section. Host and Target are connected with only one cable:
@@ -93,6 +103,18 @@ See link:bench.cfg.example[].
 When a link is defined under both the host and the target section, dsatest will
 register that link and the corresponding interfaces so that tests will be able
 to use them. Links connected to only one end will be ignored.
+
+== usage
+
+Note that you need the `NET_CAP_ADMIN` capability in order to configure network
+interfaces.
+
+[source,sh]
+----
+# run all tests containing "ping" in their test method names
+mv bench.cfg.example bench.cfg
+./bench.sh -t ping
+----
 
 === Out-of-tree configuration
 
