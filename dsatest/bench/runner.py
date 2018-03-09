@@ -130,7 +130,7 @@ def main():
                         help="list tests instead of executing them")
     parser.add_argument('-T', '--test-dir', default=test_dir,
                         help="test folder, default to dsatest's test folder")
-    parser.add_argument('-B', '--bench', default="bench.cfg",
+    parser.add_argument('-f', '--file', default="bench.cfg",
                         help="bench configuration file")
     parser.add_argument('-C', '--conf-dir', default=None,
                         help='path to the configuration directory')
